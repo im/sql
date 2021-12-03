@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+</html>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="/sql/sql-asm.js"></script>
+
+<script>
+  initSqlJs({
+    // Required to load the wasm binary asynchronously. Of course, you can host it wherever you want
+    // You can omit locateFile completely when running in node
+    locateFile: (filename) => `/sql/sql-wasm.wasm`,
+  }).then((SQL) => {
+    axios
+      .get(
+        "/sql/db.db",
+        { responseType: "arraybuffer" },
+        { headers: { "Access-Control-Allow-Origin": "*" } }
+      )
+      .then((response) => {
+        const db = new SQL.Database(new Uint8Array(response.data));
+        const word = "hello";
+        const sql = `select * from ecdict where word="${word}"`;
+        const contents = db.exec(sql);
+        console.log("db: ", contents);
+      });
+  });
+</script>
